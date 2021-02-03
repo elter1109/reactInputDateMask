@@ -2,9 +2,10 @@ import ReactInputDate from './ReactInputMask'
 import './App.css';
 
 function App() {
+    const value = ''
   return (
     <div className="App">
-      <ReactInputDate placeholder='DD.MM.YYYY' showMaskOnFocus={true} showMaskOnHover={true} />
+      <ReactInputDate mask='DD.MM.YYYY' showMaskOnFocus={true}  inputValue={value}/>
     </div>
   );
 }

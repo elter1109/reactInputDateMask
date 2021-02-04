@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 
-export default function ReactInputMask({mask = '', showMaskOnFocus = false, inputValue}) {
+export default function ReactInputMask({mask = '', showMaskOnFocus = false, inputValue, className}) {
     const [value, setValue] = useState('')
     const [toggleCursor, setCursor] = useState(false)
     const [positionCursor, setPosCursor] = useState({
@@ -9,39 +9,51 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
     })
     const [validObject, setValidObject] = useState({})
     const [letterObject, setLetterObject] = useState({})
+    const [moveCursor, setMoveCursor] = useState({
+        start: '',
+        end: ''
+    })
+    const [maskOnFocus, setMaskOnFocus] = useState(false)
 
     useEffect(() => {
         const input = document.getElementById('inputDate')
-        input.selectionStart = positionCursor.start
-        input.selectionEnd = positionCursor.end;
+        input.setSelectionRange(positionCursor.start, positionCursor.end)
     }, [positionCursor.start, positionCursor.end, toggleCursor])
 
     useEffect(() => {
-        if (inputValue) {
-            const stateObject = createObject(inputValue)
-            setValue(stateObject)
-        }
+        const input = document.getElementById('inputDate')
+        input.setSelectionRange(moveCursor.start, moveCursor.end)
+    }, [moveCursor.start, moveCursor.end])
+
+    useEffect(() => {
+
+        //create valueObject
+        const value = inputValue ? inputValue : mask
+        const valueObject = createObject(value)
+        setValue(valueObject)
+
+        //create validObject
         const validObject = createValidObject(mask)
         setValidObject(validObject)
+
+        //create letterObject
         const letterObject = createObject(mask)
         setLetterObject(letterObject)
+
+        if(!showMaskOnFocus) setMaskOnFocus(true)
     }, [inputValue, mask])
 
     const onFocus = (e) => {
-        if (value === '' && showMaskOnFocus) {
-            const stateObject = createObject(mask)
-            setValue(stateObject)
+        if (showMaskOnFocus && !maskOnFocus) {
+            setMaskOnFocus(true)
         }
 
     }
+
     const onClick = (e) => {
-        currentCursorPosition({
-            target: e.target, position: {
-                start: positionCursor.start,
-                end: positionCursor.end
-            }
-        })
+        setCursor(!toggleCursor)
     }
+
     const createValidObject = (mask) => {
         let validObject = {}, month = 0, day = 0, year = 0;
         [...mask].forEach((el, index) => {
@@ -91,7 +103,8 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
                     year += 1;
                 } else {
                     regex = {
-                        mandatoryReg: /[\d]/
+                        mandatoryReg: /[\d]/,
+                        dopReg: /[\d]/
                     }
                     year += 1;
                 }
@@ -109,6 +122,7 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
         let isMatchEdditional = true;
         const prevPos = (position - 1).toString();
         const prevValue = value[prevPos] ?? '0';
+        console.log({val}, {position},{prevValue}, {prevPos}, {letter}, {newPos})
         if ((prevValue === '3' && letter === "D") || (prevValue === '2' && letter === 'Y') || (prevValue === '1' && letter === "M")) {
             isMatchEdditional = validObject[newPos].dopReg.test(val)
         }
@@ -206,26 +220,22 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
             }
 
         } else if (key === 'ArrowRight' || key === 'ArrowLeft') {
-
-            const newStart = key === 'ArrowRight' ? selectionStart + 1 : selectionStart - 1;
-            const newEnd = key === 'ArrowRight' ? selectionStart + 2 : selectionStart - 1;
-            console.log('left/right', {selectionStart}, {newStart}, {newEnd})
-            currentCursorPosition({target: e.target, position: {start: newStart, end: newEnd}})
+            let newStart = key === 'ArrowRight' ? selectionStart + 1 : selectionStart - 1;
+            const newEnd = key === 'ArrowRight' ? selectionStart + 2 : newStart + 1;
+            setMoveCursor({
+                ...moveCursor,
+                start: newStart,
+                end: newEnd
+            })
 
         }
-    }
-
-    function currentCursorPosition({target, position: {start, end}}) {
-        target.selectionStart = start;
-        target.selectionEnd = end;
-        setCursor(!toggleCursor)
-
     }
 
     const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
     return (
         <input id='inputDate' placeholder={showMaskOnFocus ? '' : mask} type='text'
-               onClick={onClick}
-               onFocus={onFocus} value={newState} onChange={onHandleChange} onKeyDown={onKeyDown}></input>
+               onClick={onClick} className={className}
+               onFocus={onFocus} value={maskOnFocus ? newState : ''} onChange={onHandleChange} onKeyDown={onKeyDown}
+               autoComplete='off'></input>
     )
 }

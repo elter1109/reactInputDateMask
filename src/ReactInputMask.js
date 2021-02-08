@@ -1,6 +1,11 @@
 import React, {useState, useEffect} from 'react';
 
-export default function ReactInputMask({mask = '', showMaskOnFocus = false, inputValue, className}) {
+export default function ReactInputMask({
+                                           mask = 'DD.MM.YYYY',
+                                           showMaskOnFocus = false,
+                                           inputValue = '',
+                                           className = ''
+                                       }) {
     const [value, setValue] = useState('')
     const [toggleCursor, setCursor] = useState(false)
     const [positionCursor, setPosCursor] = useState({
@@ -40,8 +45,8 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
         const letterObject = createObject(mask)
         setLetterObject(letterObject)
 
-        if(!showMaskOnFocus) setMaskOnFocus(true)
-    }, [inputValue, mask])
+        if (!showMaskOnFocus) setMaskOnFocus(true)
+    }, [inputValue, mask, showMaskOnFocus])
 
     const onFocus = (e) => {
         if (showMaskOnFocus && !maskOnFocus) {
@@ -49,16 +54,39 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
         }
 
     }
+    const isCurrValueHaveDigital = (currValue) => {
+        const separator = currValue['3']
+        const reDigit = /[0-9]/g
+        const resultArr = Object.values(currValue).filter(el => el !== separator).map((el) => el.search(reDigit)).filter(el => el === 0)
+        return {
+            isCurrValueHaveAllDigit: Boolean(resultArr.length === 8),
+            isCurrValueNotDigital: Boolean(resultArr.length === 0)
+        }
+    }
+
 
     const onClick = (e) => {
-        setCursor(!toggleCursor)
+        const {isCurrValueHaveAllDigit} = isCurrValueHaveDigital(value)
+        if(isCurrValueHaveAllDigit) {
+            let {selectionStart} = e.target;
+            setPosCursor({
+                ...positionCursor,
+                start: selectionStart,
+                end: selectionStart + 1
+            })
+
+        } else {
+            setCursor(!toggleCursor)
+        }
+
+
     }
 
     const createValidObject = (mask) => {
         let validObject = {}, month = 0, day = 0, year = 0;
         [...mask].forEach((el, index) => {
             const newIndex = index + 1;
-            if (el === "M") {
+            if (el === "M" || el === "m") {
                 let regex = {};
                 if (month === 0) {
                     regex = {
@@ -73,7 +101,7 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
                 }
                 const property = el + newIndex
                 validObject[property] = {...regex}
-            } else if (el === 'D') {
+            } else if (el === 'D' || el === "d") {
                 let regex = {}
                 if (day === 0) {
                     regex = {
@@ -88,7 +116,7 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
                 }
                 const property = el + newIndex
                 validObject[property] = {...regex}
-            } else if (el === 'Y') {
+            } else if (el === 'Y' || el === "y") {
                 let regex;
                 if (year === 0) {
                     regex = {
@@ -110,6 +138,13 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
                 }
                 const property = el + newIndex
                 validObject[property] = {...regex}
+            } else {
+                const regex = {
+                    mandatoryReg: /[./]/,
+                    dopReg: /[./]/
+                }
+                const property = el + newIndex
+                validObject[property] = {...regex}
             }
         })
         return validObject
@@ -122,8 +157,7 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
         let isMatchEdditional = true;
         const prevPos = (position - 1).toString();
         const prevValue = value[prevPos] ?? '0';
-        console.log({val}, {position},{prevValue}, {prevPos}, {letter}, {newPos})
-        if ((prevValue === '3' && letter === "D") || (prevValue === '2' && letter === 'Y') || (prevValue === '1' && letter === "M")) {
+        if ((prevValue === '3' && letter.toUpperCase() === "D") || (prevValue === '2' && letter.toUpperCase() === 'Y') || (prevValue === '1' && letter.toUpperCase() === "M")) {
             isMatchEdditional = validObject[newPos].dopReg.test(val)
         }
         const isMatchTotal = isMatchMandatory && isMatchEdditional;
@@ -180,7 +214,15 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
                         start: nextValue,
                         end: nextValue + 1
                     })
-                } else {
+                } else if(selectionStart === 3 || selectionStart === 6) {
+                    const nextSelStart = selectionStart;
+                    setPosCursor({
+                        ...positionCursor,
+                        start: nextSelStart,
+                        end: nextSelStart + 1
+                    })
+
+                }else {
                     setCursor(!toggleCursor)
                 }
             }
@@ -231,11 +273,28 @@ export default function ReactInputMask({mask = '', showMaskOnFocus = false, inpu
         }
     }
 
+    const onHandlePaste = (e) => {
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        const {isCurrValueNotDigital} = isCurrValueHaveDigital(value)
+        if (isCurrValueNotDigital && paste.length === 10) {
+            setPosCursor({
+                ...positionCursor,
+                start: 0,
+                end: 1
+            })
+            const valueObject = createObject(paste)
+            setValue(valueObject)
+        }
+
+    }
+
     const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
     return (
         <input id='inputDate' placeholder={showMaskOnFocus ? '' : mask} type='text'
                onClick={onClick} className={className}
                onFocus={onFocus} value={maskOnFocus ? newState : ''} onChange={onHandleChange} onKeyDown={onKeyDown}
-               autoComplete='off'></input>
+               autoComplete='off' onPaste={onHandlePaste}></input>
     )
 }
+
+//02.05.2001

@@ -3,10 +3,14 @@ import './App.css';
 
 function App() {
     const value = ''
-    const className = 'select'
+    const className = 'inputMask'
   return (
     <div className="App">
-      <ReactInputDate mask='DD.MM.YYYY' showMaskOnFocus={false}  inputValue={value} className={className}/>
+        <label className='label'>
+            <ReactInputDate mask='DD.MM.YYYY' showMaskOnFocus={true}  className={className}/>
+            <span className='field-label'>День рождения</span>
+        </label>
+
     </div>
   );
 }

@@ -2,7 +2,7 @@ import ReactInputDate from './ReactInputMask'
 import './App.css';
 
 function App() {
-    const value = ''
+    // const value = ''
     const className = 'inputMask'
   return (
     <div className="App">

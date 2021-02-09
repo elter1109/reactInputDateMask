@@ -45,6 +45,16 @@ export default function ReactInputMask({
         const letterObject = createObject(mask)
         setLetterObject(letterObject)
 
+        //setPosition Cursor
+        setPosCursor((positionCursor) => {
+            return {
+                ...positionCursor,
+                start: 0,
+                end: 1
+            }
+
+        })
+
         if (!showMaskOnFocus) setMaskOnFocus(true)
     }, [inputValue, mask, showMaskOnFocus])
 
@@ -57,17 +67,13 @@ export default function ReactInputMask({
     const isCurrValueHaveDigital = (currValue) => {
         const separator = currValue['3']
         const reDigit = /[0-9]/g
+        console.log({currValue})
         const resultArr = Object.values(currValue).filter(el => el !== separator).map((el) => el.search(reDigit)).filter(el => el === 0)
-        return {
-            isCurrValueHaveAllDigit: Boolean(resultArr.length === 8),
-            isCurrValueNotDigital: Boolean(resultArr.length === 0)
-        }
+        return Boolean(resultArr.length === 8)
     }
 
-
     const onClick = (e) => {
-        const {isCurrValueHaveAllDigit} = isCurrValueHaveDigital(value)
-        if(isCurrValueHaveAllDigit) {
+        if (isCurrValueHaveDigital(value)) {
             let {selectionStart} = e.target;
             setPosCursor({
                 ...positionCursor,
@@ -78,7 +84,6 @@ export default function ReactInputMask({
         } else {
             setCursor(!toggleCursor)
         }
-
 
     }
 
@@ -150,13 +155,14 @@ export default function ReactInputMask({
         return validObject
     }
 
-    const checkVal = (val, position) => {
+    const checkVal = (val, position, prevVal = undefined) => {
         const newPos = letterObject[position] + position;
         const letter = letterObject[position]
         const isMatchMandatory = validObject[newPos].mandatoryReg.test(val)
         let isMatchEdditional = true;
         const prevPos = (position - 1).toString();
-        const prevValue = value[prevPos] ?? '0';
+        const valuePrevPos = value[prevPos] ?? '0'
+        const prevValue = prevVal ? prevVal : valuePrevPos;
         if ((prevValue === '3' && letter.toUpperCase() === "D") || (prevValue === '2' && letter.toUpperCase() === 'Y') || (prevValue === '1' && letter.toUpperCase() === "M")) {
             isMatchEdditional = validObject[newPos].dopReg.test(val)
         }
@@ -214,7 +220,7 @@ export default function ReactInputMask({
                         start: nextValue,
                         end: nextValue + 1
                     })
-                } else if(selectionStart === 3 || selectionStart === 6) {
+                } else if (selectionStart === 3 || selectionStart === 6) {
                     const nextSelStart = selectionStart;
                     setPosCursor({
                         ...positionCursor,
@@ -222,7 +228,7 @@ export default function ReactInputMask({
                         end: nextSelStart + 1
                     })
 
-                }else {
+                } else {
                     setCursor(!toggleCursor)
                 }
             }
@@ -273,17 +279,29 @@ export default function ReactInputMask({
         }
     }
 
-    const onHandlePaste = (e) => {
-        const paste = (e.clipboardData || window.clipboardData).getData('text');
-        const {isCurrValueNotDigital} = isCurrValueHaveDigital(value)
-        if (isCurrValueNotDigital && paste.length === 10) {
-            setPosCursor({
-                ...positionCursor,
-                start: 0,
-                end: 1
+    const onHandlePaste = ({target: {selectionStart}, clipboardData}) => {
+        const paste = (clipboardData || window.clipboardData).getData('text');
+        if (paste.length <= 10) {
+            const valueString = Object.values(value).join('')
+            const prevValue = valueString.slice(0, selectionStart)
+            const postValue = valueString.slice(selectionStart + paste.length)
+            let arrayValue = [];
+            let pos = selectionStart;
+            [...paste].forEach((el, index) => {
+                pos += 1
+                const isValid = checkVal(el, pos, arrayValue[index-1])
+                if (isValid) {
+                    arrayValue.push(el)
+                } else {
+                    arrayValue.push(letterObject[pos])
+                }
             })
-            const valueObject = createObject(paste)
-            setValue(valueObject)
+            const newValueString = [prevValue, ...arrayValue, postValue].join('')
+            setValue({
+                ...value,
+                ...createObject(newValueString)
+            })
+
         }
 
     }
@@ -297,4 +315,4 @@ export default function ReactInputMask({
     )
 }
 
-//02.05.2001
+//31.13.2578

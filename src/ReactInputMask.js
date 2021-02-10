@@ -3,6 +3,7 @@ import React, {useState, useEffect} from 'react';
 export default function ReactInputMask({
                                            mask = 'DD.MM.YYYY',
                                            showMaskOnFocus = false,
+                                           showMaskOnHover = false,
                                            inputValue = '',
                                            className = ''
                                        }) {
@@ -19,6 +20,7 @@ export default function ReactInputMask({
         end: ''
     })
     const [maskOnFocus, setMaskOnFocus] = useState(false)
+    const [statePlaceholder, setStatePlaceholder] = useState('')
 
     useEffect(() => {
         const input = document.getElementById('inputDate')
@@ -54,33 +56,58 @@ export default function ReactInputMask({
             }
 
         })
-
-        if (!showMaskOnFocus) setMaskOnFocus(true)
+        if (!showMaskOnFocus || inputValue) setMaskOnFocus(true)
     }, [inputValue, mask, showMaskOnFocus])
 
     const onFocus = (e) => {
         if (showMaskOnFocus && !maskOnFocus) {
             setMaskOnFocus(true)
+            setStatePlaceholder('')
         }
 
     }
-    const isCurrValueHaveDigital = (currValue) => {
-        const separator = currValue['3']
-        const reDigit = /[0-9]/g
-        console.log({currValue})
-        const resultArr = Object.values(currValue).filter(el => el !== separator).map((el) => el.search(reDigit)).filter(el => el === 0)
-        return Boolean(resultArr.length === 8)
+
+    const findDigitsOrLettersInValue = ({value, looking}) => {
+        const separator = value['3']
+        const regex = {
+            digits: /[0-9]/g,
+            letters: /[mMyYdD]/
+        }
+        const resultArray = Object.values(value).filter(el => el !== separator).map((el) => el.search(regex[looking])).filter(el => el === 0)
+        return resultArray.length
+    }
+
+    const isCurrValueHaveDigits = (currValue) => {
+        const quantityDigits = findDigitsOrLettersInValue({value: currValue, looking: 'digits'})
+        const resultIndexLetters = Object.values(currValue).findIndex(el => {
+            const regex = /[mMyYdD]/
+            const result = el.search(regex)
+            return result === 0
+        })
+        const quantityLetters = findDigitsOrLettersInValue({value: currValue, looking: 'letters'})
+        return {
+            allDigits: Boolean(quantityDigits === 8),
+            indexLetter: resultIndexLetters,
+            allLetters: Boolean(quantityLetters === 8)
+        }
     }
 
     const onClick = (e) => {
-        if (isCurrValueHaveDigital(value)) {
+        const {allDigits, indexLetter} = isCurrValueHaveDigits(value)
+
+        if (allDigits) {
             let {selectionStart} = e.target;
             setPosCursor({
                 ...positionCursor,
                 start: selectionStart,
                 end: selectionStart + 1
             })
-
+        } else if (indexLetter) {
+            setPosCursor({
+                ...positionCursor,
+                start: indexLetter,
+                end: indexLetter + 1
+            })
         } else {
             setCursor(!toggleCursor)
         }
@@ -91,7 +118,7 @@ export default function ReactInputMask({
         let validObject = {}, month = 0, day = 0, year = 0;
         [...mask].forEach((el, index) => {
             const newIndex = index + 1;
-            if (el === "M" || el === "m") {
+            if (el.toUpperCase() === "M") {
                 let regex = {};
                 if (month === 0) {
                     regex = {
@@ -106,7 +133,7 @@ export default function ReactInputMask({
                 }
                 const property = el + newIndex
                 validObject[property] = {...regex}
-            } else if (el === 'D' || el === "d") {
+            } else if (el.toUpperCase() === 'D') {
                 let regex = {}
                 if (day === 0) {
                     regex = {
@@ -121,7 +148,7 @@ export default function ReactInputMask({
                 }
                 const property = el + newIndex
                 validObject[property] = {...regex}
-            } else if (el === 'Y' || el === "y") {
+            } else if (el.toUpperCase() === 'Y') {
                 let regex;
                 if (year === 0) {
                     regex = {
@@ -238,7 +265,7 @@ export default function ReactInputMask({
 
     }
 
-    function createObject(string) {
+    const createObject = (string) => {
         let newObject = {};
         [...string].forEach(((el, index) => {
             newObject[index + 1] = el
@@ -289,7 +316,7 @@ export default function ReactInputMask({
             let pos = selectionStart;
             [...paste].forEach((el, index) => {
                 pos += 1
-                const isValid = checkVal(el, pos, arrayValue[index-1])
+                const isValid = checkVal(el, pos, arrayValue[index - 1])
                 if (isValid) {
                     arrayValue.push(el)
                 } else {
@@ -306,13 +333,32 @@ export default function ReactInputMask({
 
     }
 
+    const onHandleMouseEnter = (e) => {
+        if (showMaskOnHover && statePlaceholder === '' && !maskOnFocus) {
+            setStatePlaceholder(mask)
+        }
+    }
+
+    const onHandleMouseLeave = (e) => {
+        if (showMaskOnHover && statePlaceholder && !maskOnFocus) {
+            setStatePlaceholder('')
+        }
+    }
+
+    const onHandleBlur = (e) => {
+        const {allLetters} = isCurrValueHaveDigits(value)
+        if (allLetters && showMaskOnFocus && maskOnFocus) {
+            setMaskOnFocus(false)
+        }
+    }
+
     const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
     return (
-        <input id='inputDate' placeholder={showMaskOnFocus ? '' : mask} type='text'
+        <input id='inputDate' placeholder={statePlaceholder} type='text'
                onClick={onClick} className={className}
                onFocus={onFocus} value={maskOnFocus ? newState : ''} onChange={onHandleChange} onKeyDown={onKeyDown}
-               autoComplete='off' onPaste={onHandlePaste}></input>
+               autoComplete='off' onPaste={onHandlePaste} onMouseEnter={onHandleMouseEnter}
+               onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur}></input>
     )
 }
 
-//31.13.2578

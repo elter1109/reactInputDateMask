@@ -1,19 +1,15 @@
 .App {
   height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
+  color: grey;
+  padding: 200px;
 }
 .inputMask {
-  padding: 32px 23px 6px 23px;
+  padding: 5px;
   font-size: 20px;
-  line-height: 32px;
-  background-color: transparent;
-  box-sizing: border-box;
-  color: #141414;
-  display: inline-block;
-  font-family: GerberaRegular, "Segoe UI", "Droid Sans", Roboto, Helvetica, Arial, sans-serif;
-  border-radius: 16px;
 }
 
 .inputMask:focus {
@@ -25,16 +21,19 @@
 }
 
 .field-label {
-  position: absolute;
-  font-size: 16px;
-  line-height: 24px;
-  top: 9px;
-  left: 23px;
-  right: 23px;
+  margin-left: 10px;
+}
+
+.example-label {
+  margin-right: 10px;
+  font-size: 20px;
+  align-self: flex-end;
 }
 
 .label {
-  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 

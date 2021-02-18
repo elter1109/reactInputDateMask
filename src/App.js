@@ -9,7 +9,7 @@ function App() {
         <label className='label'>
             <span className='example-label'>Date:</span>
             <div>
-                <ReactInputDate mask='dd/mm/yyyy' showMaskOnFocus={true}  className={className} inputValue={value} showMaskOnHover={true} />
+                <ReactInputDate mask='dd/mm/yyyy' showMaskOnFocus={true}  className={className} value={value} showMaskOnHover={true} />
                 <span className='comment'>dd/mm/yyyy</span>
             </div>
 
@@ -17,7 +17,7 @@ function App() {
         <label className='label'>
             <span className='example-label'>Date:</span>
             <div>
-                <ReactInputDate mask='mm/dd/yyyy' showMaskOnFocus={true}  className={className} inputValue={value} showMaskOnHover={false} id='input2'/>
+                <ReactInputDate mask='mm/dd/yyyy' showMaskOnFocus={true}  className={className} value={value} showMaskOnHover={false} />
                 <span className='comment'>mm/dd/yyyy</span>
             </div>
 

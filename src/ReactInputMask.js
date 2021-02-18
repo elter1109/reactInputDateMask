@@ -5,7 +5,8 @@ export default function ReactInputMask({
                                            showMaskOnFocus = false,
                                            showMaskOnHover = false,
                                            inputValue = '',
-                                           className = ''
+                                           className = '',
+                                           id = 'inputDate'
                                        }) {
     const [value, setValue] = useState('')
     const [toggleCursor, setCursor] = useState(false)
@@ -23,14 +24,14 @@ export default function ReactInputMask({
     const [statePlaceholder, setStatePlaceholder] = useState('')
 
     useEffect(() => {
-        const input = document.getElementById('inputDate')
+        const input = document.getElementById(id)
         input.setSelectionRange(positionCursor.start, positionCursor.end)
-    }, [positionCursor.start, positionCursor.end, toggleCursor])
+    }, [positionCursor.start, positionCursor.end, toggleCursor, id])
 
     useEffect(() => {
-        const input = document.getElementById('inputDate')
+        const input = document.getElementById(id)
         input.setSelectionRange(moveCursor.start, moveCursor.end)
-    }, [moveCursor.start, moveCursor.end])
+    }, [moveCursor.start, moveCursor.end, id])
 
     useEffect(() => {
 
@@ -94,7 +95,6 @@ export default function ReactInputMask({
 
     const onClick = (e) => {
         const {allDigits, indexLetter} = isCurrValueHaveDigits(value)
-
         if (allDigits) {
             let {selectionStart} = e.target;
             setPosCursor({
@@ -108,6 +108,7 @@ export default function ReactInputMask({
                 start: indexLetter,
                 end: indexLetter + 1
             })
+            setCursor(!toggleCursor)
         } else {
             setCursor(!toggleCursor)
         }
@@ -225,7 +226,7 @@ export default function ReactInputMask({
                     const newSelect = selectionStart + 2;
                     setValue({
                         ...value,
-                        [selectionStart]: 0,
+                        [selectionStart]: '0',
                         [nextValue]: newValue
                     })
                     setPosCursor({
@@ -238,8 +239,8 @@ export default function ReactInputMask({
                     const nextSelStart = selectionStart + 1;
                     setValue({
                         ...value,
-                        [selectionStart]: 2,
-                        [nextSelStart]: 0,
+                        [selectionStart]: '2',
+                        [nextSelStart]: '0',
                         [nextValue]: newValue
                     })
                     setPosCursor({
@@ -354,7 +355,7 @@ export default function ReactInputMask({
 
     const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
     return (
-        <input id='inputDate' placeholder={statePlaceholder} type='text'
+        <input id={id} placeholder={statePlaceholder} type='text'
                onClick={onClick} className={className}
                onFocus={onFocus} value={maskOnFocus ? newState : ''} onChange={onHandleChange} onKeyDown={onKeyDown}
                autoComplete='off' onPaste={onHandlePaste} onMouseEnter={onHandleMouseEnter}

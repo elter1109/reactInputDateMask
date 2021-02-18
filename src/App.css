@@ -6,6 +6,10 @@
   align-items: center;
   color: grey;
   padding: 200px;
+
+}
+label:first-child {
+  margin-bottom: 15px;
 }
 .inputMask {
   padding: 5px;
@@ -20,7 +24,7 @@
   background-color: #7733ff36;
 }
 
-.field-label {
+.comment {
   margin-left: 10px;
 }
 

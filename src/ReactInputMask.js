@@ -160,13 +160,15 @@ export default function ReactInputMask({
                 } else if (year === 1) {
                     regex = {
                         mandatoryReg: /[9|0]/,
-                        dopReg: /[0]/
+                        dopReg: /[0]/,
+                        dopRegEdit: /[9]/
                     }
                     year += 1;
                 } else {
                     regex = {
                         mandatoryReg: /[\d]/,
-                        dopReg: /[\d]/
+                        dopReg: /[\d]/,
+                        dopRegEdit: /[\d]/
                     }
                     year += 1;
                 }
@@ -194,6 +196,8 @@ export default function ReactInputMask({
         const prevValue = prevVal ? prevVal : valuePrevPos;
         if ((prevValue === '3' && letter.toUpperCase() === "D") || (prevValue === '2' && letter.toUpperCase() === 'Y') || (prevValue === '1' && letter.toUpperCase() === "M")) {
             isMatchEdditional = validObject[newPos].dopReg.test(val)
+        } else if(prevValue === '1' && letter.toUpperCase() === 'Y') {
+            isMatchEdditional = validObject[newPos].dopRegEdit.test(val)
         }
         const isMatchTotal = isMatchMandatory && isMatchEdditional;
         return isMatchTotal

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 
 export default function ReactInputMask({
                                            mask = 'DD.MM.YYYY',
@@ -22,15 +22,15 @@ export default function ReactInputMask({
     })
     const [maskOnFocus, setMaskOnFocus] = useState(false)
     const [statePlaceholder, setStatePlaceholder] = useState('')
-    const unicId = uid();
+   const myRef  = useRef(null);
 
     useEffect(() => {
-       const input = document.getElementById(unicId);
+       const input = myRef.current;
         input.setSelectionRange(positionCursor.start, positionCursor.end)
     }, [positionCursor.start, positionCursor.end, toggleCursor])
 
     useEffect(() => {
-        const input = document.getElementById(unicId);
+        const input = myRef.current;
         input.setSelectionRange(moveCursor.start, moveCursor.end)
     }, [moveCursor.start, moveCursor.end])
 
@@ -60,12 +60,6 @@ export default function ReactInputMask({
         })
         if (!showMaskOnFocus || inputValue) setMaskOnFocus(true)
     }, [inputValue, mask, showMaskOnFocus])
-
-    function uid () {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    };
-
-
 
     const onFocus = (e) => {
         if (showMaskOnFocus && !maskOnFocus) {
@@ -362,7 +356,7 @@ export default function ReactInputMask({
 
     const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
     return (
-        <input id={unicId} placeholder={statePlaceholder} type='text'
+        <input ref={myRef} placeholder={statePlaceholder} type='text'
                onClick={onClick} className={className}
                onFocus={onFocus} value={maskOnFocus ? newState : ''} onChange={onHandleChange} onKeyDown={onKeyDown}
                autoComplete='off' onPaste={onHandlePaste} onMouseEnter={onHandleMouseEnter}

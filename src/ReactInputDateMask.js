@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useEffect, useRef} from 'react';
 
-export default function ReactInputMask({
-                                           mask = 'DD.MM.YYYY',
+export default function ReactInputDateMask({
+                                           mask = 'dd.mm.yyyy',
                                            showMaskOnFocus = false,
                                            showMaskOnHover = false,
                                            value: inputValue = '',
@@ -133,8 +133,7 @@ export default function ReactInputMask({
                         dopReg: /[0-2]/,
                     }
                 }
-                const property = el + newIndex
-                validObject[property] = {...regex}
+                validObject[el + newIndex] = {...regex}
             } else if (el.toUpperCase() === 'D') {
                 let regex = {}
                 if (day === 0) {
@@ -148,8 +147,7 @@ export default function ReactInputMask({
                         dopReg: /[0|1]/,
                     }
                 }
-                const property = el + newIndex
-                validObject[property] = {...regex}
+                validObject[el + newIndex] = {...regex}
             } else if (el.toUpperCase() === 'Y') {
                 let regex;
                 if (year === 0) {
@@ -172,15 +170,13 @@ export default function ReactInputMask({
                     }
                     year += 1;
                 }
-                const property = el + newIndex
-                validObject[property] = {...regex}
+                validObject[el + newIndex] = {...regex}
             } else {
                 const regex = {
                     mandatoryReg: /[./]/,
                     dopReg: /[./]/
                 }
-                const property = el + newIndex
-                validObject[property] = {...regex}
+                validObject[el + newIndex] = {...regex}
             }
         })
         return validObject

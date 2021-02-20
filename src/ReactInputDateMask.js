@@ -2,12 +2,13 @@
 import React, {useState, useEffect, useRef} from 'react';
 
 export default function ReactInputDateMask({
-                                           mask = 'dd.mm.yyyy',
-                                           showMaskOnFocus = false,
-                                           showMaskOnHover = false,
-                                           value: inputValue = '',
-                                           className = '',
-                                       }) {
+                                               mask = 'dd.mm.yyyy',
+                                               showMaskOnFocus = false,
+                                               showMaskOnHover = false,
+                                               value: inputValue = '',
+                                               className = '',
+                                               onChange = undefined
+                                           }) {
     const [value, setValue] = useState('')
     const [toggleCursor, setCursor] = useState(false)
     const [positionCursor, setPosCursor] = useState({
@@ -22,10 +23,10 @@ export default function ReactInputDateMask({
     })
     const [maskOnFocus, setMaskOnFocus] = useState(false)
     const [statePlaceholder, setStatePlaceholder] = useState('')
-   const myRef  = useRef(null);
+    const myRef = useRef(null);
 
     useEffect(() => {
-       const input = myRef.current;
+        const input = myRef.current;
         input.setSelectionRange(positionCursor.start, positionCursor.end)
     }, [positionCursor.start, positionCursor.end, toggleCursor])
 
@@ -40,7 +41,10 @@ export default function ReactInputDateMask({
         const value = inputValue ? inputValue : mask
         const valueObject = createObject(value)
         setValue(valueObject)
+        if (!showMaskOnFocus || inputValue) setMaskOnFocus(true)
+    }, [inputValue, showMaskOnFocus])
 
+    useEffect(() => {
         //create validObject
         const validObject = createValidObject(mask)
         setValidObject(validObject)
@@ -48,18 +52,7 @@ export default function ReactInputDateMask({
         //create letterObject
         const letterObject = createObject(mask)
         setLetterObject(letterObject)
-
-        //setPosition Cursor
-        setPosCursor((positionCursor) => {
-            return {
-                ...positionCursor,
-                start: 0,
-                end: 1
-            }
-
-        })
-        if (!showMaskOnFocus || inputValue) setMaskOnFocus(true)
-    }, [inputValue, mask, showMaskOnFocus])
+    }, [mask])
 
     const onFocus = (e) => {
         if (showMaskOnFocus && !maskOnFocus) {
@@ -192,7 +185,7 @@ export default function ReactInputDateMask({
         const prevValue = prevVal ? prevVal : valuePrevPos;
         if ((prevValue === '3' && letter.toUpperCase() === "D") || (prevValue === '2' && letter.toUpperCase() === 'Y') || (prevValue === '1' && letter.toUpperCase() === "M")) {
             isMatchEdditional = validObject[newPos].dopReg.test(val)
-        } else if(prevValue === '1' && letter.toUpperCase() === 'Y') {
+        } else if (prevValue === '1' && letter.toUpperCase() === 'Y') {
             isMatchEdditional = validObject[newPos].dopRegEdit.test(val)
         }
         const isMatchTotal = isMatchMandatory && isMatchEdditional;
@@ -207,13 +200,12 @@ export default function ReactInputDateMask({
         const newValue = valueArray[newPositionStart]
         const reg = /[\d]/g;
         const isValidValue = reg.test(newValue)
+        let newState;
         if (isValidValue && selectionStart < 11) {
             const isMatch = checkVal(newValue, selectionStart)
             if (isMatch) {
-                setValue({
-                    ...value,
-                    [selectionStart]: newValue
-                })
+                newState = {...value, [selectionStart]: newValue};
+                setValue(newState)
                 const newSelectionStart = (selectionStart === 2 || selectionStart === 5) ? selectionStart + 1 : selectionStart
                 const newSelectionEnd = (selectionStart === 2 || selectionStart === 5) ? selectionEnd + 2 : selectionEnd + 1
                 setPosCursor({
@@ -225,11 +217,12 @@ export default function ReactInputDateMask({
                 if (selectionStart === 1 || selectionStart === 4) {
                     const nextValue = selectionStart + 1;
                     const newSelect = selectionStart + 2;
-                    setValue({
+                    newState = {
                         ...value,
                         [selectionStart]: '0',
                         [nextValue]: newValue
-                    })
+                    }
+                    setValue(newState)
                     setPosCursor({
                         ...positionCursor,
                         start: newSelect,
@@ -238,12 +231,13 @@ export default function ReactInputDateMask({
                 } else if (selectionStart === 7) {
                     const nextValue = selectionStart + 2;
                     const nextSelStart = selectionStart + 1;
-                    setValue({
+                    newState = {
                         ...value,
                         [selectionStart]: '2',
                         [nextSelStart]: '0',
                         [nextValue]: newValue
-                    })
+                    }
+                    setValue(newState)
                     setPosCursor({
                         ...positionCursor,
                         start: nextValue,
@@ -258,12 +252,16 @@ export default function ReactInputDateMask({
                     })
 
                 } else {
+                    newState = {...value}
                     setCursor(!toggleCursor)
                 }
             }
         } else {
+            newState = {...value}
             setCursor(!toggleCursor)
         }
+
+        onChange?.(Object.values(newState).join(''))
 
     }
 
@@ -277,14 +275,16 @@ export default function ReactInputDateMask({
 
     const onKeyDown = (e) => {
         const {key, target: {selectionStart}} = e;
+        let newState;
         if (key === "Backspace" || key === "Delete") {
             if (selectionStart !== 0) {
                 e.preventDefault()
                 const newValue = letterObject[selectionStart];
-                setValue({
+                newState = {
                     ...value,
                     [selectionStart]: newValue
-                })
+                }
+                setValue(newState)
                 const newStart = selectionStart - 1;
                 const newEnd = newStart + 1
                 setPosCursor({
@@ -292,6 +292,7 @@ export default function ReactInputDateMask({
                     start: newStart,
                     end: newEnd
                 })
+                onChange?.(Object.values(newState).join(''))
             } else {
                 e.preventDefault()
             }

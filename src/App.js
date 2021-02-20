@@ -3,7 +3,7 @@ import DateInput from "./DateInput";
 import './App.css';
 
 function App() {
-    const [state, setState] = useState('12.12.2025')
+    const [state, setState] = useState('')
     const className = 'inputMask'
     const onChange = (value) => {
         setState(value)

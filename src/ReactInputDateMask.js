@@ -15,7 +15,6 @@ export default function ReactInputDateMask({
         start: 0,
         end: 1,
     })
-    const [validObject, setValidObject] = useState({})
     const [letterObject, setLetterObject] = useState({})
     const [moveCursor, setMoveCursor] = useState({
         start: '',
@@ -36,8 +35,6 @@ export default function ReactInputDateMask({
     }, [moveCursor.start, moveCursor.end])
 
     useEffect(() => {
-
-        //create valueObject
         const value = inputValue ? inputValue : mask
         const valueObject = createObject(value)
         setValue(valueObject)
@@ -45,11 +42,6 @@ export default function ReactInputDateMask({
     }, [inputValue, showMaskOnFocus])
 
     useEffect(() => {
-        //create validObject
-        const validObject = createValidObject(mask)
-        setValidObject(validObject)
-
-        //create letterObject
         const letterObject = createObject(mask)
         setLetterObject(letterObject)
     }, [mask])
@@ -109,87 +101,37 @@ export default function ReactInputDateMask({
 
     }
 
-    const createValidObject = (mask) => {
-        let validObject = {}, month = 0, day = 0, year = 0;
-        [...mask].forEach((el, index) => {
-            const newIndex = index + 1;
-            if (el.toUpperCase() === "M") {
-                let regex = {};
-                if (month === 0) {
-                    regex = {
-                        mandatoryReg: /[0-1]/
-                    }
-                    month += 1;
-                } else {
-                    regex = {
-                        mandatoryReg: /[0-9]/,
-                        dopReg: /[0-2]/,
-                    }
-                }
-                validObject[el + newIndex] = {...regex}
-            } else if (el.toUpperCase() === 'D') {
-                let regex = {}
-                if (day === 0) {
-                    regex = {
-                        mandatoryReg: /[0-3]/
-                    }
-                    day += 1;
-                } else {
-                    regex = {
-                        mandatoryReg: /[0-9]/,
-                        dopReg: /[0|1]/,
-                    }
-                }
-                validObject[el + newIndex] = {...regex}
-            } else if (el.toUpperCase() === 'Y') {
-                let regex;
-                if (year === 0) {
-                    regex = {
-                        mandatoryReg: /[[1|2]/
-                    }
-                    year += 1;
-                } else if (year === 1) {
-                    regex = {
-                        mandatoryReg: /[9|0]/,
-                        dopReg: /[0]/,
-                        dopRegEdit: /[9]/
-                    }
-                    year += 1;
-                } else {
-                    regex = {
-                        mandatoryReg: /[\d]/,
-                        dopReg: /[\d]/,
-                        dopRegEdit: /[\d]/
-                    }
-                    year += 1;
-                }
-                validObject[el + newIndex] = {...regex}
-            } else {
-                const regex = {
-                    mandatoryReg: /[./]/,
-                    dopReg: /[./]/
-                }
-                validObject[el + newIndex] = {...regex}
-            }
-        })
-        return validObject
+    const checkOneValue = (val, position) => {
+
+        const regex =  {
+            d: /([0-3]d)|(0[1-9]|[12][0-9]|3[01])|(d[0-9])/,
+            m: /([0-1]m)|(0[1-9]|1[012])|(m[0-2])/,
+            y: /([1-2]yyy)|((19|20)yy)|((19|20)\dy)|((19|20)\d\d)|(yyy\d)|(yy\d\d)|(yy\dy)/,
+            '/': /\//,
+            '.': /\./
+        }
+        const newString = Object.values({...value, [position]: val}).join('');
+        const letter = letterObject[position]
+        let newVal;
+        if(letter === "d") {
+            newVal = newString.slice(0, 2)
+        } else if(letter === "m") {
+            newVal = newString.slice(3, 5)
+        } else if(letter === "y") {
+            newVal = newString.slice(6, 10)
+        } else {
+            newVal = newString.slice(2, 3)
+        }
+
+        const isMatch = regex[letter].test(newVal)
+        return isMatch
     }
 
-    const checkVal = (val, position, prevVal = undefined) => {
-        const newPos = letterObject[position] + position;
-        const letter = letterObject[position]
-        const isMatchMandatory = validObject[newPos].mandatoryReg.test(val)
-        let isMatchEdditional = true;
-        const prevPos = (position - 1).toString();
-        const valuePrevPos = value[prevPos] ?? '0'
-        const prevValue = prevVal ? prevVal : valuePrevPos;
-        if ((prevValue === '3' && letter.toUpperCase() === "D") || (prevValue === '2' && letter.toUpperCase() === 'Y') || (prevValue === '1' && letter.toUpperCase() === "M")) {
-            isMatchEdditional = validObject[newPos].dopReg.test(val)
-        } else if (prevValue === '1' && letter.toUpperCase() === 'Y') {
-            isMatchEdditional = validObject[newPos].dopRegEdit.test(val)
-        }
-        const isMatchTotal = isMatchMandatory && isMatchEdditional;
-        return isMatchTotal
+    const checkManyValue = (value) => {
+        const regex = /^(0[1-9]|[12][0-9]|3[01])[/.](0[1-9]|1[012])[/.](19|20)\d\d$/
+        const isMatch = regex.test(value)
+        return isMatch
+
     }
 
     const onHandleChange = (e) => {
@@ -202,7 +144,7 @@ export default function ReactInputDateMask({
         const isValidValue = reg.test(newValue)
         let newState;
         if (isValidValue && selectionStart < 11) {
-            const isMatch = checkVal(newValue, selectionStart)
+            const isMatch = checkOneValue(newValue, selectionStart)
             if (isMatch) {
                 newState = {...value, [selectionStart]: newValue};
                 setValue(newState)
@@ -311,7 +253,7 @@ export default function ReactInputDateMask({
 
     const onHandlePaste = ({target: {selectionStart}, clipboardData}) => {
         const paste = (clipboardData || window.clipboardData).getData('text');
-        if (paste.length <= 10) {
+        if (paste.length < 10) {
             const valueString = Object.values(value).join('')
             const prevValue = valueString.slice(0, selectionStart)
             const postValue = valueString.slice(selectionStart + paste.length)
@@ -319,7 +261,7 @@ export default function ReactInputDateMask({
             let pos = selectionStart;
             [...paste].forEach((el, index) => {
                 pos += 1
-                const isValid = checkVal(el, pos, arrayValue[index - 1])
+                const isValid = checkOneValue(el, pos)
                 if (isValid) {
                     arrayValue.push(el)
                 } else {
@@ -331,6 +273,15 @@ export default function ReactInputDateMask({
                 ...value,
                 ...createObject(newValueString)
             })
+
+        } else if(paste.length === 10) {
+            const isValid = checkManyValue(paste)
+            if(isValid) {
+                setValue({
+                    ...value,
+                    ...createObject(paste)
+                })
+            }
 
         }
 
@@ -364,4 +315,5 @@ export default function ReactInputDateMask({
                onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur}></input>
     )
 }
+
 

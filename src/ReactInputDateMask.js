@@ -23,6 +23,7 @@ export default function ReactInputDateMask({
     const [maskOnFocus, setMaskOnFocus] = useState(false)
     const [statePlaceholder, setStatePlaceholder] = useState('')
     const myRef = useRef(null);
+    
 
     useEffect(() => {
         const input = myRef.current;
@@ -263,6 +264,7 @@ export default function ReactInputDateMask({
             }
         })
         const newValueString = [prevValue, ...arrayValue, postValue].join('')
+        console.log({newValueString})
         setValue({
             ...value,
             ...createObject(newValueString)

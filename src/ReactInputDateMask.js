@@ -23,13 +23,6 @@ export default function ReactInputDateMask({
     const [maskOnFocus, setMaskOnFocus] = useState(false)
     const [statePlaceholder, setStatePlaceholder] = useState('')
     const myRef = useRef(null);
-    const regex = {
-        d: /([0-3]d)|(0[1-9]|[12][0-9]|3[01])|(d[0-9])/,
-        m: /([0-1]m)|(0[1-9]|1[012])|(m[0-2])/,
-        y: /([1-2]yyy)|((19|20)yy)|((19|20)\dy)|((19|20)\d\d)|(yyy\d)|(yy\d\d)|(yy\dy)/,
-        '/': /\//,
-        '.': /\./
-    }
 
     useEffect(() => {
         const input = myRef.current;
@@ -108,69 +101,32 @@ export default function ReactInputDateMask({
 
     }
 
-    const checkOneValue = (val, position) => {
-        const newString = Object.values({...value, [position]: val}).join('');
+    const checkOneValue = (val, valueString, position) => {
+        const regex = {
+            d: /([0-3]d)|(0[1-9]|[12][0-9]|3[01])|(d[0-9])/,
+            m: /([0-1]m)|(0[1-9]|1[012])|(m[0-2])/,
+            y: /([1-2]yyy)|((19|20)yy)|((19|20)\dy)|((19|20)\d\d)|(y{2,3}\d{1,2})|(yy\dy)|([1-2]y\d{1,2})/,
+            '/': /\//,
+            '.': /\./
+        }
         const letter = letterObject[position]
         let newVal;
         if (letter === "d") {
-            newVal = newString.slice(0, 2)
+            newVal = mask === 'dd.mm.yyyy' ? valueString.slice(0, 2) : valueString.slice(3, 5)
         } else if (letter === "m") {
-            newVal = newString.slice(3, 5)
+            newVal = mask === 'dd.mm.yyyy' ?  valueString.slice(3, 5) : valueString.slice(0, 2)
         } else if (letter === "y") {
-            newVal = newString.slice(6, 10)
+            newVal = valueString.slice(6, 10)
         } else {
-            newVal = newString.slice(2, 3)
+            newVal = valueString.slice(2, 3)
         }
         const isMatch = regex[letter].test(newVal)
         return isMatch
     }
 
-    const checkManyValue = (pasteString, position) => {
-        let arrayLetter = [], resultArray = []
-        const arrayPaste = [...pasteString]
-        let pos = position - 1
-        for (const [index] of arrayPaste.entries()) {
-            pos += 1
-            arrayLetter[index] = letterObject[pos]
-        }
-        let day = [], month = [], year = [], sep = []
-        arrayLetter.forEach(el => {
-            if (el === 'd' && day.length === 0) {
-                day.push('d')
-            } else if (el === 'm' && month.length === 0) {
-                month.push('m')
-            } else if (el === 'y' && year.length === 0) {
-                year.push('y')
-            } else if (el === '/' || el === '.') {
-                sep.push(el)
-            }
-
-        })
-        let newArrayLetter = [...day, sep[0], ...month, sep[1], ...year];
-        for (const key of newArrayLetter) {
-            const element = ['d', 'm', 'y', '/', '.'].find(el => el === key)
-            if (key === element && key !== undefined) {
-                const isMatch = pasteString.search(regex[key])
-                if (isMatch === 0) {
-                    resultArray.push(pasteString)
-                } else {
-                    for (const [index] of arrayPaste.entries()) {
-                        resultArray.push(letterObject[index + 1])
-                    }
-
-                }
-            }
-        }
-        console.log({pasteString}, {position}, {arrayLetter}, {newArrayLetter}, {resultArray})
-
-        return resultArray
-
-    }
-
     const onHandleChange = (e) => {
 
         const {selectionStart, selectionEnd, value: curValue} = e.target;
-        console.log({curValue})
         const valueArray = [...curValue];
         const newPositionStart = selectionStart - 1;
         const newValue = valueArray[newPositionStart]
@@ -178,7 +134,8 @@ export default function ReactInputDateMask({
         const isValidValue = reg.test(newValue)
         let newState;
         if (isValidValue && selectionStart < 11) {
-            const isMatch = checkOneValue(newValue, selectionStart)
+            const valueString = Object.values({...value, [selectionStart]: newValue}).join('');
+            const isMatch = checkOneValue(newValue, valueString, selectionStart)
             if (isMatch) {
                 newState = {...value, [selectionStart]: newValue};
                 setValue(newState)
@@ -286,19 +243,31 @@ export default function ReactInputDateMask({
     }
 
     const onHandlePaste = ({target: {selectionStart}, clipboardData}) => {
-        const paste = (clipboardData || window.clipboardData).getData('text');
-        if (paste.length <= 10) {
-            const valueString = Object.values(value).join('')
-            const prevValue = valueString.slice(0, selectionStart)
-            const postValue = valueString.slice(selectionStart + paste.length)
-            const arrayValue = checkManyValue(paste, selectionStart + 1)
-            const newValueString = [prevValue, ...arrayValue, postValue].join('')
-            console.log({newValueString})
-            setValue({
-                ...value,
-                ...createObject(newValueString)
-            })
-        }
+        const pasteRaw = (clipboardData || window.clipboardData).getData('text');
+        const paste = pasteRaw.length <= 10 ? pasteRaw : pasteRaw.slice(0, 10)
+        const valueString = Object.values(value).join('')
+        const prevValue = valueString.slice(0, selectionStart)
+        const postValue = valueString.slice(selectionStart + paste.length)
+        let pos = selectionStart;
+        let newValueObject = {...value};
+        let arrayValue = [];
+        [...paste].forEach((el, index) => {
+            pos += 1
+            newValueObject[pos] = el
+            const isMatch = checkOneValue(el, Object.values(newValueObject).join(''), pos)
+            if (isMatch) {
+                arrayValue.push(el)
+            } else {
+                newValueObject[pos] = letterObject[pos]
+                arrayValue.push(letterObject[pos])
+            }
+        })
+        const newValueString = [prevValue, ...arrayValue, postValue].join('')
+        setValue({
+            ...value,
+            ...createObject(newValueString)
+        })
+
     }
 
     const onHandleMouseEnter = (e) => {
@@ -329,6 +298,6 @@ export default function ReactInputDateMask({
                onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur}></input>
     )
 }
-//48/12/2005
+//32-12/45456utioruyitruy
 
 

@@ -32,10 +32,10 @@ function DateInput(props) {
 |                    **[`mask`](#mask)**                    |       `{String}`          |   'dd.mm.yyyy'   | Mask format |
 |          **[`showMaskOnFocus`](#showMaskOnFocus)**        |       `{Boolean}`         |     `false`      | If this option - true, the mask will only be displayed when an event occurs onFocus |
 | **[`showMaskOnHover`](#showMaskOnHover)**                 |       `{Boolean}`         |     `false`      |  If this option - true, when you mouse over the input, the mask appears, when you mouse  leave the input, the mask disappears
-|                **[`className`](#other properties)**              |     `{String}`            |               |  |
-|                **[`onChange`](#other properties)**              |     `{Function}`            |               |  |
-|                **[`disabled`](#other properties)**              |     `{Boolean}`            |       `false`        |  |
-|                **[`readOnly`](#other properties)**              |     `{Boolean}`            |      `false`         |  |
+|                **[`className`](#properties)**              |     `{String}`            |               |  |
+|                **[`onChange`](#properties)**              |     `{Function}`            |               |  |
+|                **[`disabled`](#properties)**              |     `{Boolean}`            |       `false`        |  |
+|                **[`readOnly`](#properties)**              |     `{Boolean}`            |      `false`         |  |
 
 ### `mask`
 Mask format. Can be a string. There are two options. The first option by default: 'dd.mm.yyyy'. The second options: 'mm.dd.yyyy'. As a separator, you can use `/` or `.` <br /><br />
@@ -52,5 +52,5 @@ If this option - false, the mask will always be displayed. If this option - true
 ### `showMaskOnHover`
 This option is available when the option "showMaskOnFocus" - true. If this option - true, when you mouse over the input, the mask appears, when you mouse  leave the input, the mask disappears
 
-### `other properties`
+### `properties`
 You can also pass the following properties: `className`, `disabled`, `readOnly`, `onChange`

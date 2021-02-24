@@ -7,7 +7,9 @@ export default function ReactInputDateMask({
                                                showMaskOnHover = false,
                                                value: inputValue = '',
                                                className = '',
-                                               onChange = undefined
+                                               onChange = undefined,
+                                               disabled = false,
+                                               readOnly = false
                                            }) {
     const [value, setValue] = useState('')
     const [toggleCursor, setCursor] = useState(false)
@@ -23,7 +25,6 @@ export default function ReactInputDateMask({
     const [maskOnFocus, setMaskOnFocus] = useState(false)
     const [statePlaceholder, setStatePlaceholder] = useState('')
     const myRef = useRef(null);
-    
 
     useEffect(() => {
         const input = myRef.current;
@@ -111,16 +112,20 @@ export default function ReactInputDateMask({
             '.': /\./
         }
         const letter = letterObject[position]
-        console.log({letter})
         let newVal;
         if (letter === "d") {
             newVal = mask === 'dd.mm.yyyy' || mask === 'dd/mm/yyyy' ? valueString.slice(0, 2) : valueString.slice(3, 5)
         } else if (letter === "m") {
-            newVal = mask === 'dd.mm.yyyy' || mask === 'dd/mm/yyyy'?  valueString.slice(3, 5) : valueString.slice(0, 2)
+            newVal = mask === 'dd.mm.yyyy' || mask === 'dd/mm/yyyy' ? valueString.slice(3, 5) : valueString.slice(0, 2)
         } else if (letter === "y") {
             newVal = valueString.slice(6, 10)
         } else {
-            newVal = valueString.slice(2, 3)
+            if (position === 3) {
+                newVal = valueString.slice(2, 3)
+            } else {
+                newVal = valueString.slice(5, 6)
+            }
+
         }
         const isMatch = regex[letter].test(newVal)
         return isMatch
@@ -265,7 +270,6 @@ export default function ReactInputDateMask({
             }
         })
         const newValueString = [prevValue, ...arrayValue, postValue].join('')
-        console.log({newValueString})
         setValue({
             ...value,
             ...createObject(newValueString)
@@ -298,9 +302,9 @@ export default function ReactInputDateMask({
                onClick={onClick} className={className}
                onFocus={onFocus} value={maskOnFocus ? newState : ''} onChange={onHandleChange} onKeyDown={onKeyDown}
                autoComplete='off' onPaste={onHandlePaste} onMouseEnter={onHandleMouseEnter}
-               onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur}></input>
+               onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur} disabled={disabled} readOnly={readOnly}></input>
     )
 }
-//32-12/45456utioruyitruy
+
 
 

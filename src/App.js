@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import DateInput from "./DateInput";
 import './App.css';
 import ReactInputDateMask from "./ReactInputDateMask";
 
@@ -14,7 +13,8 @@ function App() {
             <label className='label'>
                 <span className='example-label'>Date:</span>
                 <div>
-                    <DateInput className={className} value='' onChange={onChange}/>
+                    <ReactInputDateMask mask='dd/mm/yyyy' showMaskOnFocus={false} className={className} value=''
+                                        onChange={onChange} showMaskOnHover={true} disabled />
                     <span className='comment'>dd/mm/yyyy</span>
                 </div>
 
@@ -23,7 +23,7 @@ function App() {
                 <span className='example-label'>Date:</span>
                 <div>
                     <ReactInputDateMask mask='mm/dd/yyyy' showMaskOnFocus={true} className={className} value=''
-                                        onChange={onChange} showMaskOnHover={true}/>
+                                        onChange={onChange} showMaskOnHover={true} readOnly/>
                     <span className='comment'>mm/dd/yyyy</span>
                 </div>
 

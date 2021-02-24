@@ -1,6 +1,6 @@
 {
   "name": "maska",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
   "description": "Date Masked input component for React",
   "dependencies": {
@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^12.1.10",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-input-date-mask": "file:../reactInputDateMask/react-input-date-mask-1.0.0.tgz",
     "react-scripts": "4.0.1",
     "web-vitals": "^0.2.4"
   },

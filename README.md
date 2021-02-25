@@ -4,7 +4,6 @@
 
 Input date masking component for React. React-input-date-mask requires React 16.8.0 or later.
 
-#### [Demo]()
 
 # Table of Contents
 * [Install](#install)

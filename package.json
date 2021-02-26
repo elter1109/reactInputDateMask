@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "description": "Date Masked input component for React",
-  "homepage": "https://github.com/elter1109/reactInputDate.git",
+  "homepage": "https://elter1109.github.io/reactInputDateMask",
+
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",

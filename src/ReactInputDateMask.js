@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useEffect, useRef} from 'react';
+import {mobile} from "./utils";
+import {DELETE_CONTENT_BACKWARD} from './constants'
 
 export default function ReactInputDateMask({
                                                mask = 'dd.mm.yyyy',
@@ -81,7 +83,7 @@ export default function ReactInputDateMask({
         }
     }
 
-    const onClick = (e) => {
+    const trackingCursorPos = (e) => {
         const {allDigits, indexLetter} = isCurrValueHaveDigits(value)
         if (allDigits) {
             let {selectionStart} = e.target;
@@ -90,7 +92,7 @@ export default function ReactInputDateMask({
                 start: selectionStart,
                 end: selectionStart + 1
             })
-        } else if (indexLetter) {
+        } else if (indexLetter || indexLetter === 0) {
             setPosCursor({
                 ...positionCursor,
                 start: indexLetter,
@@ -100,7 +102,14 @@ export default function ReactInputDateMask({
         } else {
             setCursor(!toggleCursor)
         }
+    }
 
+    const onClick = (e) => {
+        trackingCursorPos(e)
+    }
+
+    const onTouchStart = (e) => {
+        trackingCursorPos(e)
     }
 
     const checkOneValue = (val, valueString, position) => {
@@ -131,80 +140,6 @@ export default function ReactInputDateMask({
         return isMatch
     }
 
-    const onHandleChange = (e) => {
-
-        const {selectionStart, selectionEnd, value: curValue} = e.target;
-        const valueArray = [...curValue];
-        const newPositionStart = selectionStart - 1;
-        const newValue = valueArray[newPositionStart]
-        const reg = /[\d]/g;
-        const isValidValue = reg.test(newValue)
-        let newState;
-        if (isValidValue && selectionStart < 11) {
-            const valueString = Object.values({...value, [selectionStart]: newValue}).join('');
-            const isMatch = checkOneValue(newValue, valueString, selectionStart)
-            if (isMatch) {
-                newState = {...value, [selectionStart]: newValue};
-                setValue(newState)
-                const newSelectionStart = (selectionStart === 2 || selectionStart === 5) ? selectionStart + 1 : selectionStart
-                const newSelectionEnd = (selectionStart === 2 || selectionStart === 5) ? selectionEnd + 2 : selectionEnd + 1
-                setPosCursor({
-                    ...positionCursor,
-                    start: newSelectionStart,
-                    end: newSelectionEnd
-                })
-            } else {
-                if (selectionStart === 1 || selectionStart === 4) {
-                    const nextValue = selectionStart + 1;
-                    const newSelect = selectionStart + 2;
-                    newState = {
-                        ...value,
-                        [selectionStart]: '0',
-                        [nextValue]: newValue
-                    }
-                    setValue(newState)
-                    setPosCursor({
-                        ...positionCursor,
-                        start: newSelect,
-                        end: newSelect + 1,
-                    })
-                } else if (selectionStart === 7) {
-                    const nextValue = selectionStart + 2;
-                    const nextSelStart = selectionStart + 1;
-                    newState = {
-                        ...value,
-                        [selectionStart]: '2',
-                        [nextSelStart]: '0',
-                        [nextValue]: newValue
-                    }
-                    setValue(newState)
-                    setPosCursor({
-                        ...positionCursor,
-                        start: nextValue,
-                        end: nextValue + 1
-                    })
-                } else if (selectionStart === 3 || selectionStart === 6) {
-                    const nextSelStart = selectionStart;
-                    setPosCursor({
-                        ...positionCursor,
-                        start: nextSelStart,
-                        end: nextSelStart + 1
-                    })
-
-                } else {
-                    newState = {...value}
-                    setCursor(!toggleCursor)
-                }
-            }
-        } else {
-            newState = {...value}
-            setCursor(!toggleCursor)
-        }
-
-        onChange?.(Object.values(newState).join(''))
-
-    }
-
     const createObject = (string) => {
         let newObject = {};
         [...string].forEach(((el, index) => {
@@ -213,26 +148,110 @@ export default function ReactInputDateMask({
         return newObject;
     }
 
+    const onInput = (e) => {
+        const {target: {selectionStart, selectionEnd, value: curValue}, nativeEvent: {inputType}} = e;
+        if (mobile && inputType === DELETE_CONTENT_BACKWARD) {
+            console.log('%c onInput', 'color: red',)
+            deletingElement({pos: selectionStart + 1, currentValue: value})
+
+        } else {
+            const valueArray = [...curValue];
+            const newPositionStart = selectionStart - 1;
+            const newValue = valueArray[newPositionStart]
+            const reg = /[\d]/g;
+            const isValidValue = reg.test(newValue)
+            let newState;
+            if (isValidValue && selectionStart < 11) {
+                const valueString = Object.values({...value, [selectionStart]: newValue}).join('');
+                const isMatch = checkOneValue(newValue, valueString, selectionStart)
+                if (isMatch) {
+                    newState = {...value, [selectionStart]: newValue};
+                    setValue(newState)
+                    const newSelectionStart = (selectionStart === 2 || selectionStart === 5) ? selectionStart + 1 : selectionStart
+                    const newSelectionEnd = (selectionStart === 2 || selectionStart === 5) ? selectionEnd + 2 : selectionEnd + 1
+                    setPosCursor({
+                        ...positionCursor,
+                        start: newSelectionStart,
+                        end: newSelectionEnd
+                    })
+                } else {
+                    if (selectionStart === 1 || selectionStart === 4) {
+                        const nextValue = selectionStart + 1;
+                        const newSelect = selectionStart + 2;
+                        newState = {
+                            ...value,
+                            [selectionStart]: '0',
+                            [nextValue]: newValue
+                        }
+                        setValue(newState)
+                        setPosCursor({
+                            ...positionCursor,
+                            start: newSelect,
+                            end: newSelect + 1,
+                        })
+                    } else if (selectionStart === 7) {
+                        const nextValue = selectionStart + 2;
+                        const nextSelStart = selectionStart + 1;
+                        newState = {
+                            ...value,
+                            [selectionStart]: '2',
+                            [nextSelStart]: '0',
+                            [nextValue]: newValue
+                        }
+                        setValue(newState)
+                        setPosCursor({
+                            ...positionCursor,
+                            start: nextValue,
+                            end: nextValue + 1
+                        })
+                    } else if (selectionStart === 3 || selectionStart === 6) {
+                        const nextSelStart = selectionStart;
+                        setPosCursor({
+                            ...positionCursor,
+                            start: nextSelStart,
+                            end: nextSelStart + 1
+                        })
+
+                    } else {
+                        newState = {...value}
+                        setCursor(!toggleCursor)
+                    }
+                }
+            } else {
+                newState = {...value}
+                setCursor(!toggleCursor)
+            }
+
+            onChange?.(Object.values(newState).join(''))
+        }
+    }
+
+    const deletingElement = ({pos, currentValue}) => {
+        const newValue = letterObject[pos];
+        let newState = {
+            ...currentValue,
+            [pos]: newValue
+        }
+        setValue(newState)
+        const newStart = pos - 1;
+        const newEnd = newStart + 1
+        console.log('%c deletingElement', 'color: violet', {pos}, {newStart}, {newEnd})
+        setPosCursor({
+            ...positionCursor,
+            start: newStart,
+            end: newEnd
+        })
+        onChange?.(Object.values(newState).join(''))
+    }
+    console.log('render', {positionCursor})
+
     const onKeyDown = (e) => {
         const {key, target: {selectionStart}} = e;
-        let newState;
+        console.log('%c keyDown', 'color: orange',)
         if (key === "Backspace" || key === "Delete") {
             if (selectionStart !== 0) {
                 e.preventDefault()
-                const newValue = letterObject[selectionStart];
-                newState = {
-                    ...value,
-                    [selectionStart]: newValue
-                }
-                setValue(newState)
-                const newStart = selectionStart - 1;
-                const newEnd = newStart + 1
-                setPosCursor({
-                    ...positionCursor,
-                    start: newStart,
-                    end: newEnd
-                })
-                onChange?.(Object.values(newState).join(''))
+                deletingElement({pos: selectionStart, currentValue: value})
             } else {
                 e.preventDefault()
             }
@@ -298,9 +317,10 @@ export default function ReactInputDateMask({
 
     const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
     return (
-        <input ref={myRef} placeholder={statePlaceholder} type='text'
-               onClick={onClick} className={className}
-               onFocus={onFocus} value={maskOnFocus ? newState : ''} onChange={onHandleChange} onKeyDown={onKeyDown}
+        <input ref={myRef} placeholder={statePlaceholder} type='tel'
+               onClick={onClick} className={className} spellCheck="false" onInput={onInput} onTouchStart={onTouchStart}
+               onFocus={onFocus} value={maskOnFocus ? newState : ''} onKeyDown={onKeyDown}
+               onTouchStart={onTouchStart}
                autoComplete='off' onPaste={onHandlePaste} onMouseEnter={onHandleMouseEnter}
                onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur} disabled={disabled} readOnly={readOnly}></input>
     )

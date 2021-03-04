@@ -29,6 +29,7 @@ export default function ReactInputDateMask({
     const myRef = useRef(null);
 
     useEffect(() => {
+        console.log('useEffect1', positionCursor.start, positionCursor.end)
         const input = myRef.current;
         input.setSelectionRange(positionCursor.start, positionCursor.end)
     }, [positionCursor.start, positionCursor.end, toggleCursor])
@@ -85,13 +86,16 @@ export default function ReactInputDateMask({
 
     const trackingCursorPos = (e) => {
         const {allDigits, indexLetter} = isCurrValueHaveDigits(value)
+        let {selectionStart} = e.target;
         if (allDigits) {
-            let {selectionStart} = e.target;
-            setPosCursor({
-                ...positionCursor,
-                start: selectionStart,
-                end: selectionStart + 1
-            })
+            if (positionCursor.start !== selectionStart) {
+                setPosCursor({
+                    ...positionCursor,
+                    start: selectionStart,
+                    end: selectionStart + 1
+                })
+            }
+
         } else if (indexLetter || indexLetter === 0) {
             setPosCursor({
                 ...positionCursor,
@@ -99,6 +103,7 @@ export default function ReactInputDateMask({
                 end: indexLetter + 1
             })
             setCursor(!toggleCursor)
+
         } else {
             setCursor(!toggleCursor)
         }
@@ -151,10 +156,12 @@ export default function ReactInputDateMask({
     const onInput = (e) => {
         const {target: {selectionStart, selectionEnd, value: curValue}, nativeEvent: {inputType}} = e;
         if (mobile && inputType === DELETE_CONTENT_BACKWARD) {
-            console.log('%c onInput', 'color: red',)
+            console.log('%c onInput', 'color: red', {mobile}, {inputType})
             deletingElement({pos: selectionStart + 1, currentValue: value})
+            console.log(e.target.selectionStart, e.target.selectionEnd)
 
         } else {
+            console.log('%c onInputNoMobil', 'color: red')
             const valueArray = [...curValue];
             const newPositionStart = selectionStart - 1;
             const newValue = valueArray[newPositionStart]
@@ -232,18 +239,20 @@ export default function ReactInputDateMask({
             ...currentValue,
             [pos]: newValue
         }
-        setValue(newState)
+        setValue(() => {
+            return newState
+        })
         const newStart = pos - 1;
         const newEnd = newStart + 1
-        console.log('%c deletingElement', 'color: violet', {pos}, {newStart}, {newEnd})
-        setPosCursor({
-            ...positionCursor,
-            start: newStart,
-            end: newEnd
+        setPosCursor((prevState) => {
+            return {
+                ...prevState,
+                start: newStart,
+                end: newEnd
+            }
         })
         onChange?.(Object.values(newState).join(''))
     }
-    console.log('render', {positionCursor})
 
     const onKeyDown = (e) => {
         const {key, target: {selectionStart}} = e;
@@ -297,13 +306,15 @@ export default function ReactInputDateMask({
     }
 
     const onHandleMouseEnter = (e) => {
-        if (showMaskOnHover && statePlaceholder === '' && !maskOnFocus) {
+        const {allLetters} = isCurrValueHaveDigits(value)
+        if (allLetters && showMaskOnHover && statePlaceholder === '' && !maskOnFocus) {
             setStatePlaceholder(mask)
         }
     }
 
     const onHandleMouseLeave = (e) => {
-        if (showMaskOnHover && statePlaceholder && !maskOnFocus) {
+        const {allLetters} = isCurrValueHaveDigits(value)
+        if (allLetters && showMaskOnHover && statePlaceholder && !maskOnFocus) {
             setStatePlaceholder('')
         }
     }
@@ -316,11 +327,11 @@ export default function ReactInputDateMask({
     }
 
     const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
+    console.log('render', {positionCursor})
     return (
         <input ref={myRef} placeholder={statePlaceholder} type='tel'
                onClick={onClick} className={className} spellCheck="false" onInput={onInput} onTouchStart={onTouchStart}
                onFocus={onFocus} value={maskOnFocus ? newState : ''} onKeyDown={onKeyDown}
-               onTouchStart={onTouchStart}
                autoComplete='off' onPaste={onHandlePaste} onMouseEnter={onHandleMouseEnter}
                onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur} disabled={disabled} readOnly={readOnly}></input>
     )

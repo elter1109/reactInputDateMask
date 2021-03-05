@@ -29,14 +29,13 @@ export default function ReactInputDateMask({
     const myRef = useRef(null);
 
     useEffect(() => {
-        console.log('useEffect1', positionCursor.start, positionCursor.end)
-        const input = myRef.current;
-        input.setSelectionRange(positionCursor.start, positionCursor.end)
+        console.log('useEffect1', myRef.current.selectionStart, myRef.current.selectionEnd)
+        myRef.current.setSelectionRange(positionCursor.start, positionCursor.end)
+        console.log('UseEffect после', myRef.current.selectionStart, myRef.current.selectionEnd)
     }, [positionCursor.start, positionCursor.end, toggleCursor])
 
     useEffect(() => {
-        const input = myRef.current;
-        input.setSelectionRange(moveCursor.start, moveCursor.end)
+        myRef.current.setSelectionRange(moveCursor.start, moveCursor.end)
     }, [moveCursor.start, moveCursor.end])
 
     useEffect(() => {
@@ -49,6 +48,7 @@ export default function ReactInputDateMask({
     useEffect(() => {
         const letterObject = createObject(mask)
         setLetterObject(letterObject)
+        myRef.current.setSelectionRange(0, 1)
     }, [mask])
 
     const onFocus = (e) => {
@@ -156,9 +156,8 @@ export default function ReactInputDateMask({
     const onInput = (e) => {
         const {target: {selectionStart, selectionEnd, value: curValue}, nativeEvent: {inputType}} = e;
         if (mobile && inputType === DELETE_CONTENT_BACKWARD) {
-            console.log('%c onInput', 'color: red', {mobile}, {inputType})
+            console.log('%c onInput', 'color: red', {mobile}, {inputType}, myRef.current.selectionStart, myRef.current.selectionEnd)
             deletingElement({pos: selectionStart + 1, currentValue: value})
-            console.log(e.target.selectionStart, e.target.selectionEnd)
 
         } else {
             console.log('%c onInputNoMobil', 'color: red')
@@ -256,7 +255,6 @@ export default function ReactInputDateMask({
 
     const onKeyDown = (e) => {
         const {key, target: {selectionStart}} = e;
-        console.log('%c keyDown', 'color: orange',)
         if (key === "Backspace" || key === "Delete") {
             if (selectionStart !== 0) {
                 e.preventDefault()
@@ -327,7 +325,7 @@ export default function ReactInputDateMask({
     }
 
     const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
-    console.log('render', {positionCursor})
+    console.log('render')
     return (
         <input ref={myRef} placeholder={statePlaceholder} type='tel'
                onClick={onClick} className={className} spellCheck="false" onInput={onInput} onTouchStart={onTouchStart}

@@ -3,16 +3,16 @@ import React, {useState, useEffect, useRef} from 'react';
 import {mobile} from "./utils";
 import {DELETE_CONTENT_BACKWARD} from './constants'
 
-export default function ReactInputDateMask({
-                                               mask = 'dd.mm.yyyy',
-                                               showMaskOnFocus = false,
-                                               showMaskOnHover = false,
-                                               value: inputValue = '',
-                                               className = '',
-                                               onChange = undefined,
-                                               disabled = false,
-                                               readOnly = false
-                                           }) {
+function ReactInputDateMask({
+                                mask = 'dd.mm.yyyy',
+                                showMaskOnFocus = false,
+                                showMaskOnHover = false,
+                                value: inputValue = '',
+                                className = '',
+                                onChange = undefined,
+                                disabled = false,
+                                readOnly = false
+                            }) {
     const [value, setValue] = useState('')
     const [toggleCursor, setCursor] = useState(false)
     const [positionCursor, setPosCursor] = useState({
@@ -29,9 +29,7 @@ export default function ReactInputDateMask({
     const myRef = useRef(null);
 
     useEffect(() => {
-        console.log('useEffect1', myRef.current.selectionStart, myRef.current.selectionEnd)
         myRef.current.setSelectionRange(positionCursor.start, positionCursor.end)
-        console.log('UseEffect после', myRef.current.selectionStart, myRef.current.selectionEnd)
     }, [positionCursor.start, positionCursor.end, toggleCursor])
 
     useEffect(() => {
@@ -154,13 +152,13 @@ export default function ReactInputDateMask({
     }
 
     const onInput = (e) => {
-        const {target: {selectionStart, selectionEnd, value: curValue}, nativeEvent: {inputType}} = e;
+        let {target: {selectionStart, selectionEnd, value: curValue}, nativeEvent: {inputType}} = e;
         if (mobile && inputType === DELETE_CONTENT_BACKWARD) {
-            console.log('%c onInput', 'color: red', {mobile}, {inputType}, myRef.current.selectionStart, myRef.current.selectionEnd)
-            deletingElement({pos: selectionStart + 1, currentValue: value})
+            selectionStart += 1;
+            deletingElement({pos: selectionStart, currentValue: value})
+
 
         } else {
-            console.log('%c onInputNoMobil', 'color: red')
             const valueArray = [...curValue];
             const newPositionStart = selectionStart - 1;
             const newValue = valueArray[newPositionStart]
@@ -238,9 +236,7 @@ export default function ReactInputDateMask({
             ...currentValue,
             [pos]: newValue
         }
-        setValue(() => {
-            return newState
-        })
+        setValue(newState)
         const newStart = pos - 1;
         const newEnd = newStart + 1
         setPosCursor((prevState) => {
@@ -325,7 +321,6 @@ export default function ReactInputDateMask({
     }
 
     const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
-    console.log('render')
     return (
         <input ref={myRef} placeholder={statePlaceholder} type='tel'
                onClick={onClick} className={className} spellCheck="false" onInput={onInput} onTouchStart={onTouchStart}
@@ -334,6 +329,8 @@ export default function ReactInputDateMask({
                onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur} disabled={disabled} readOnly={readOnly}></input>
     )
 }
+
+export {ReactInputDateMask as default}
 
 
 

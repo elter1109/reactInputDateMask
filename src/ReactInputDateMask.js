@@ -156,8 +156,6 @@ function ReactInputDateMask({
         if (mobile && inputType === DELETE_CONTENT_BACKWARD) {
             selectionStart += 1;
             deletingElement({pos: selectionStart, currentValue: value})
-
-
         } else {
             const valueArray = [...curValue];
             const newPositionStart = selectionStart - 1;
@@ -181,7 +179,7 @@ function ReactInputDateMask({
                 } else {
                     if (selectionStart === 1 || selectionStart === 4) {
                         const nextValue = selectionStart + 1;
-                        const newSelect = selectionStart + 2;
+                        const newPosStart = selectionStart + 2;
                         newState = {
                             ...value,
                             [selectionStart]: '0',
@@ -190,8 +188,8 @@ function ReactInputDateMask({
                         setValue(newState)
                         setPosCursor({
                             ...positionCursor,
-                            start: newSelect,
-                            end: newSelect + 1,
+                            start: newPosStart,
+                            end: newPosStart + 1,
                         })
                     } else if (selectionStart === 7) {
                         const nextValue = selectionStart + 2;

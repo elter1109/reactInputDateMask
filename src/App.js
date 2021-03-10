@@ -22,8 +22,8 @@ function App() {
             <label className='label'>
                 <span className='example-label'>Date:</span>
                 <div>
-                    {/*<ReactInputDateMask mask='mm/dd/yyyy' showMaskOnFocus={true} className={className} value=''*/}
-                    {/*                    onChange={onChange} showMaskOnHover={true}/>*/}
+                    <ReactInputDateMask mask='mm/dd/yyyy' showMaskOnFocus={true} className={className} value=''
+                                        onChange={onChange} showMaskOnHover={true}/>
                     <span className='comment'>mm/dd/yyyy</span>
                 </div>
 

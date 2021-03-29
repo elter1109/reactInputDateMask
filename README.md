@@ -1,10 +1,8 @@
 # react-input-date-mask
 
-[comment]: <> ([![Build Status]&#40;https://img.shields.io/travis/sanniassin/react-input-mask/master.svg?style=flat&#41;]&#40;https://travis-ci.org/sanniassin/react-input-mask&#41; [![npm version]&#40;https://img.shields.io/npm/v/react-input-mask.svg?style=flat&#41;]&#40;https://www.npmjs.com/package/react-input-mask&#41; [![npm downloads]&#40;https://img.shields.io/npm/dm/react-input-mask.svg?style=flat&#41;]&#40;https://www.npmjs.com/package/react-input-mask&#41;)
-
 Input date masking component for React. React-input-date-mask requires React 16.8.0 or later.
 
-
+#### [Demo](https://elter1109.github.io/reactInputDateMask/)
 # Table of Contents
 * [Install](#install)
 * [Usage](#usage)

@@ -60,10 +60,10 @@ function ReactInputDateMask({
     const findDigitsOrLettersInValue = ({value, looking}) => {
         const separator = value['3']
         const regex = {
-            digits: /[0-9]/g,
-            letters: /[mMyYdD]/
+            digits: '[0-9]',
+            letters: '[mMyYdD]'
         }
-        const resultArray = Object.values(value).filter(el => el !== separator).map((el) => el.search(regex[looking])).filter(el => el === 0)
+        const resultArray = Object.values(value).filter(el => el !== separator).map((el) => el.search(new RegExp(`${regex[looking]}`, "g"))).filter(el => el === 0)
         return resultArray.length
     }
 
@@ -298,17 +298,23 @@ function ReactInputDateMask({
     }
 
     const onHandleMouseEnter = (e) => {
-        const {allLetters} = isCurrValueHaveDigits(value)
-        if (allLetters && showMaskOnHover && statePlaceholder === '' && !maskOnFocus) {
-            setStatePlaceholder(mask)
+        if(showMaskOnHover && showMaskOnFocus) {
+            const {allLetters} = isCurrValueHaveDigits(value)
+            if (allLetters && showMaskOnHover && statePlaceholder === '' && !maskOnFocus) {
+                setStatePlaceholder(mask)
+            }
         }
+
     }
 
     const onHandleMouseLeave = (e) => {
-        const {allLetters} = isCurrValueHaveDigits(value)
-        if (allLetters && showMaskOnHover && statePlaceholder && !maskOnFocus) {
-            setStatePlaceholder('')
+        if(showMaskOnHover && showMaskOnFocus) {
+            const {allLetters} = isCurrValueHaveDigits(value)
+            if (allLetters && showMaskOnHover && statePlaceholder && !maskOnFocus) {
+                setStatePlaceholder('')
+            }
         }
+
     }
 
     const onHandleBlur = (e) => {

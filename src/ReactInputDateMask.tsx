@@ -3,16 +3,26 @@ import React, {useState, useEffect, useRef} from 'react';
 import {mobile} from "./utils";
 import {DELETE_CONTENT_BACKWARD} from './constants'
 
-function ReactInputDateMask({
+interface IReactInputDateMask {
+    mask: string,
+    className: string,
+    value: string,
+    showMaskOnFocus: boolean,
+    showMaskOnHover: boolean,
+    onChange: (value: string) => void,
+    disabled?: boolean,
+    readOnly? : boolean
+}
+
+const  ReactInputDateMask: React.FC<IReactInputDateMask> = ({
                                 mask = 'dd.mm.yyyy',
                                 showMaskOnFocus = false,
                                 showMaskOnHover = false,
                                 value: inputValue = '',
                                 className = '',
-                                onChange = undefined,
-                                disabled = false,
-                                readOnly = false
-                            }) {
+                                disabled = undefined,
+                                readOnly = undefined
+                            }) => {
     const [value, setValue] = useState('')
     const [toggleCursor, setCursor] = useState(false)
     const [positionCursor, setPosCursor] = useState({
@@ -26,14 +36,14 @@ function ReactInputDateMask({
     })
     const [maskOnFocus, setMaskOnFocus] = useState(false)
     const [statePlaceholder, setStatePlaceholder] = useState('')
-    const myRef = useRef(null);
+    const myRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        myRef.current.setSelectionRange(positionCursor.start, positionCursor.end)
+        myRef.current!.setSelectionRange(positionCursor.start, positionCursor.end)
     }, [positionCursor.start, positionCursor.end, toggleCursor])
 
     useEffect(() => {
-        myRef.current.setSelectionRange(moveCursor.start, moveCursor.end)
+        myRef.current!.setSelectionRange(moveCursor.start, moveCursor.end)
     }, [moveCursor.start, moveCursor.end])
 
     useEffect(() => {
@@ -46,10 +56,10 @@ function ReactInputDateMask({
     useEffect(() => {
         const letterObject = createObject(mask)
         setLetterObject(letterObject)
-        myRef.current.setSelectionRange(0, 1)
+        myRef.current!.setSelectionRange(0, 1)
     }, [mask])
 
-    const onFocus = (e) => {
+    const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
         if (showMaskOnFocus && !maskOnFocus) {
             setMaskOnFocus(true)
             setStatePlaceholder('')
@@ -82,7 +92,7 @@ function ReactInputDateMask({
         }
     }
 
-    const trackingCursorPos = (e) => {
+    const trackingCursorPos = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {allDigits, indexLetter} = isCurrValueHaveDigits(value)
         let {selectionStart} = e.target;
         if (allDigits) {
@@ -107,11 +117,11 @@ function ReactInputDateMask({
         }
     }
 
-    const onClick = (e) => {
+    const onClick = (e: React.SyntheticEvent) => {
         trackingCursorPos(e)
     }
 
-    const onTouchStart = (e) => {
+    const onTouchStart = (e: React.SyntheticEvent<HTMLInputElement>) => {
         trackingCursorPos(e)
     }
 
@@ -151,7 +161,7 @@ function ReactInputDateMask({
         return newObject;
     }
 
-    const onInput = (e) => {
+    const onInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         let {target: {selectionStart, selectionEnd, value: curValue}, nativeEvent: {inputType}} = e;
         if (mobile && inputType === DELETE_CONTENT_BACKWARD) {
             selectionStart += 1;
@@ -247,7 +257,7 @@ function ReactInputDateMask({
         onChange?.(Object.values(newState).join(''))
     }
 
-    const onKeyDown = (e) => {
+    const onKeyDown = (e: React.KeyboardEvent) => {
         const {key, target: {selectionStart}} = e;
         if (key === "Backspace" || key === "Delete") {
             if (selectionStart !== 0) {
@@ -269,7 +279,7 @@ function ReactInputDateMask({
         }
     }
 
-    const onHandlePaste = ({target: {selectionStart}, clipboardData}) => {
+    const onHandlePaste = ({target: {selectionStart}, clipboardData}: React.ClipboardEvent) => {
         const pasteRaw = (clipboardData || window.clipboardData).getData('text');
         const paste = pasteRaw.length <= 10 ? pasteRaw : pasteRaw.slice(0, 10)
         const valueString = Object.values(value).join('')
@@ -297,7 +307,7 @@ function ReactInputDateMask({
 
     }
 
-    const onHandleMouseEnter = (e) => {
+    const onHandleMouseEnter = (e: React.MouseEvent<HTMLInputElement>) => {
         if(showMaskOnHover && showMaskOnFocus) {
             const {allLetters} = isCurrValueHaveDigits(value)
             if (allLetters && showMaskOnHover && statePlaceholder === '' && !maskOnFocus) {
@@ -307,7 +317,7 @@ function ReactInputDateMask({
 
     }
 
-    const onHandleMouseLeave = (e) => {
+    const onHandleMouseLeave = (e: React.MouseEvent<HTMLInputElement>) => {
         if(showMaskOnHover && showMaskOnFocus) {
             const {allLetters} = isCurrValueHaveDigits(value)
             if (allLetters && showMaskOnHover && statePlaceholder && !maskOnFocus) {
@@ -317,7 +327,7 @@ function ReactInputDateMask({
 
     }
 
-    const onHandleBlur = (e) => {
+    const onHandleBlur = (e: React.SyntheticEvent<HTMLInputElement>) => {
         const {allLetters} = isCurrValueHaveDigits(value)
         if (allLetters && showMaskOnFocus && maskOnFocus) {
             setMaskOnFocus(false)
@@ -334,7 +344,7 @@ function ReactInputDateMask({
     )
 }
 
-export {ReactInputDateMask as default}
+export default  ReactInputDateMask
 
 
 

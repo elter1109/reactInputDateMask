@@ -3,7 +3,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {mobile} from "./utils";
 import {DELETE_CONTENT_BACKWARD} from './constants'
 
-interface IReactInputDateMask {
+interface ReactInputDateMaskProps {
     mask: string,
     className: string,
     value: string,
@@ -22,7 +22,9 @@ type ArrayishType = {
 [key: number]: string
 }
 
-const  ReactInputDateMask: React.FC<IReactInputDateMask> = ({
+type Value = string | object
+
+const  ReactInputDateMask: React.FC<ReactInputDateMaskProps> = ({
                                 mask = 'dd.mm.yyyy',
                                 showMaskOnFocus = false,
                                 showMaskOnHover = false,
@@ -30,8 +32,8 @@ const  ReactInputDateMask: React.FC<IReactInputDateMask> = ({
                                 className = '',
                                 disabled = undefined,
                                 readOnly = undefined
-                            }) => {
-    const [value, setValue] = useState<string | object>('')
+                            }): JSX.Element => {
+    const [value, setValue] = useState<Value>('')
     const [toggleCursor, setCursor] = useState<boolean>(false)
     const [positionCursor, setPosCursor] = useState<C<number>>({
         start: 0,
@@ -287,33 +289,33 @@ const  ReactInputDateMask: React.FC<IReactInputDateMask> = ({
         // }
     }
 
-   // const onHandlePaste = ({target: {selectionStart}, clipboardData}: React.ClipboardEvent) => {
-        // const pasteRaw = (clipboardData || window.clipboardData).getData('text');
-        // const paste = pasteRaw.length <= 10 ? pasteRaw : pasteRaw.slice(0, 10)
-        // const valueString = Object.values(value).join('')
-        // const prevValue = valueString.slice(0, selectionStart)
-        // const postValue = valueString.slice(selectionStart + paste.length)
-        // let pos = selectionStart;
-        // let newValueObject = {...value};
-        // let arrayValue = [];
-        // [...paste].forEach((el, index) => {
-        //     pos += 1
-        //     newValueObject[pos] = el
-        //     const isMatch = checkOneValue(el, Object.values(newValueObject).join(''), pos)
-        //     if (isMatch) {
-        //         arrayValue.push(el)
-        //     } else {
-        //         newValueObject[pos] = letterObject[pos]
-        //         arrayValue.push(letterObject[pos])
-        //     }
-        // })
-        // const newValueString = [prevValue, ...arrayValue, postValue].join('')
-        // setValue({
-        //     ...value,
-        //     ...createObject(newValueString)
-        // })
+   const onHandlePaste = ({target: {selectionStart}, clipboardData}: React.ClipboardEvent) => {
+        const pasteRaw = (clipboardData || window.clipboardData).getData('text');
+        const paste = pasteRaw.length <= 10 ? pasteRaw : pasteRaw.slice(0, 10)
+        const valueString = Object.values(value).join('')
+        const prevValue = valueString.slice(0, selectionStart)
+        const postValue = valueString.slice(selectionStart + paste.length)
+        let pos = selectionStart;
+        let newValueObject = {...value};
+        let arrayValue = [];
+        [...paste].forEach((el, index) => {
+            pos += 1
+            newValueObject[pos] = el
+            const isMatch = checkOneValue(el, Object.values(newValueObject).join(''), pos)
+            if (isMatch) {
+                arrayValue.push(el)
+            } else {
+                newValueObject[pos] = letterObject[pos]
+                arrayValue.push(letterObject[pos])
+            }
+        })
+        const newValueString = [prevValue, ...arrayValue, postValue].join('')
+        setValue({
+            ...value,
+            ...createObject(newValueString)
+        })
 
-   // }
+   }
 
     const onHandleMouseEnter = (e: React.MouseEvent<HTMLInputElement>) => {
         // if(showMaskOnHover && showMaskOnFocus) {
@@ -342,13 +344,22 @@ const  ReactInputDateMask: React.FC<IReactInputDateMask> = ({
         // }
     }
 
-    const newState = Object.keys(value)?.length > 0 ? Object.values(value).join('') : value
+    const calcValue = (value: Value): string | undefined => {
+        const isValueObject = typeof value === "object" && value !== null
+        if(isValueObject && Object.keys(value)?.length > 0) {
+            return Object.values(value).join('')
+        }
+        if(typeof value === "string") {
+            return value
+        }
+    }
+
     return (
         <input ref={myRef} placeholder={statePlaceholder} type='tel'
                onClick={onClick} className={className} spellCheck="false" onInput={onInput} onTouchStart={onTouchStart}
-               onFocus={onFocus} value={maskOnFocus ? newState : ''} onKeyDown={onKeyDown}
+               onFocus={onFocus} value={calcValue(value)} onKeyDown={onKeyDown}
                autoComplete='off'
-               //onPaste={onHandlePaste}
+               onPaste={onHandlePaste}
                onMouseEnter={onHandleMouseEnter}
                onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur} disabled={disabled} readOnly={readOnly}></input>
     )

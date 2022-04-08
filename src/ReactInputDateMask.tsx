@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useEffect, useRef} from 'react';
-import {mobile} from "./utils";
-import {DELETE_CONTENT_BACKWARD} from './constants'
+// import {mobile} from "./utils";
+// import {DELETE_CONTENT_BACKWARD} from './constants'
 
 interface ReactInputDateMaskProps {
     mask: string,
@@ -24,18 +24,18 @@ type ArrayishType = {
 
 type Value = string | object
 
-const  ReactInputDateMask: React.FC<ReactInputDateMaskProps> = ({
+const  ReactInputDateMask = ({
                                 mask = 'dd.mm.yyyy',
                                 showMaskOnFocus = false,
                                 showMaskOnHover = false,
                                 value: inputValue = '',
                                 className = '',
-                                disabled = undefined,
-                                readOnly = undefined
-                            }): JSX.Element => {
+                                disabled = false,
+                                readOnly = false
+                            }: ReactInputDateMaskProps): JSX.Element => {
     const [value, setValue] = useState<Value>('')
     const [toggleCursor, setCursor] = useState<boolean>(false)
-    const [positionCursor, setPosCursor] = useState<C<number>>({
+    const [positionCursor, setPosCursor] = useState<C<number | null>>({
         start: 0,
         end: 1,
     })
@@ -48,26 +48,25 @@ const  ReactInputDateMask: React.FC<ReactInputDateMaskProps> = ({
     const [statePlaceholder, setStatePlaceholder] = useState<string>('')
     const myRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
+    useEffect((): void => {
         myRef.current!.setSelectionRange(positionCursor.start, positionCursor.end)
-    }, [positionCursor.start, positionCursor.end, toggleCursor])
+    }, [positionCursor.start, positionCursor.end])
 
-    useEffect(() => {
+    useEffect((): void => {
         myRef.current!.setSelectionRange(moveCursor.start, moveCursor.end)
     }, [moveCursor.start, moveCursor.end])
 
-    useEffect(() => {
-        const value = inputValue ? inputValue : mask
-        const valueObject = createObject(value)
+    useEffect((): void => {
+        const valueObject = createObject(inputValue ||  mask)
         setValue(valueObject)
         if (!showMaskOnFocus || inputValue) setMaskOnFocus(true)
     }, [inputValue, showMaskOnFocus])
 
-    // useEffect(() => {
-    //     const letterObject = createObject(mask)
-    //     setLetterObject(letterObject)
-    //     myRef.current!.setSelectionRange(0, 1)
-    // }, [mask])
+    useEffect((): void => {
+        const letterObject = createObject(mask)
+        setLetterObject(letterObject)
+        myRef.current!.setSelectionRange(0, 1)
+    }, [mask])
 
     const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
         if (showMaskOnFocus && !maskOnFocus) {
@@ -77,17 +76,17 @@ const  ReactInputDateMask: React.FC<ReactInputDateMaskProps> = ({
 
     }
 
-    // const findDigitsOrLettersInValue = ({value, looking}) => {
-    //     const separator = value['3']
-    //     const regex = {
-    //         digits: '[0-9]',
-    //         letters: '[mMyYdD]'
-    //     }
-    //     const resultArray = Object.values(value).filter(el => el !== separator).map((el) => el.search(new RegExp(`${regex[looking]}`, "g"))).filter(el => el === 0)
-    //     return resultArray.length
+    // const findDigitsOrLettersInValue = ({value, looking}: {value: Value, looking: string}): number => {
+        // const separator =  value['3']
+        // const regex = {
+        //     digits: '[0-9]',
+        //     letters: '[mMyYdD]'
+        // }
+        // const resultArray = Object.values(value).filter(el => el !== separator).map((el) => el.search(new RegExp(`${regex[looking]}`, "g"))).filter(el => el === 0)
+        // return resultArray.length
     // }
-    //
-    // const isCurrValueHaveDigits = (currValue) => {
+
+    // const isCurrValueHaveDigits = (currValue: Value) => {
     //     const quantityDigits = findDigitsOrLettersInValue({value: currValue, looking: 'digits'})
     //     const resultIndexLetters = Object.values(currValue).findIndex(el => {
     //         const regex = /[mMyYdD]/
@@ -101,16 +100,16 @@ const  ReactInputDateMask: React.FC<ReactInputDateMaskProps> = ({
     //         allLetters: Boolean(quantityLetters === 8)
     //     }
     // }
-    //
-    // const trackingCursorPos = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+    // const trackingCursorPos = (e: React.FormEvent<HTMLInputElement>): void => {
     //     const {allDigits, indexLetter} = isCurrValueHaveDigits(value)
-    //     let {selectionStart} = e.target;
+    //     let {selectionStart} = e.target as HTMLInputElement;
     //     if (allDigits) {
     //         if (positionCursor.start !== selectionStart) {
     //             setPosCursor({
     //                 ...positionCursor,
     //                 start: selectionStart,
-    //                 end: selectionStart + 1
+    //                end: selectionStart! + 1
     //             })
     //         }
     //
@@ -126,14 +125,14 @@ const  ReactInputDateMask: React.FC<ReactInputDateMaskProps> = ({
     //         setCursor(!toggleCursor)
     //     }
     // }
-    //
-    const onClick = (e: React.SyntheticEvent) => {
-        //trackingCursorPos(e)
-    }
 
-    const onTouchStart = (e: React.SyntheticEvent<HTMLInputElement>) => {
-        //trackingCursorPos(e)
-    }
+    // const onClick = (e: React.FormEvent<HTMLInputElement>): void => {
+    //     trackingCursorPos(e)
+    // }
+    //
+    // const onTouchStart = (e: React.FormEvent<HTMLInputElement>): void => {
+    //     trackingCursorPos(e)
+    // }
 
     // const checkOneValue = (val, valueString, position) => {
     //     const regex = {
@@ -289,33 +288,33 @@ const  ReactInputDateMask: React.FC<ReactInputDateMaskProps> = ({
         // }
     }
 
-   const onHandlePaste = ({target: {selectionStart}, clipboardData}: React.ClipboardEvent) => {
-        const pasteRaw = (clipboardData || window.clipboardData).getData('text');
-        const paste = pasteRaw.length <= 10 ? pasteRaw : pasteRaw.slice(0, 10)
-        const valueString = Object.values(value).join('')
-        const prevValue = valueString.slice(0, selectionStart)
-        const postValue = valueString.slice(selectionStart + paste.length)
-        let pos = selectionStart;
-        let newValueObject = {...value};
-        let arrayValue = [];
-        [...paste].forEach((el, index) => {
-            pos += 1
-            newValueObject[pos] = el
-            const isMatch = checkOneValue(el, Object.values(newValueObject).join(''), pos)
-            if (isMatch) {
-                arrayValue.push(el)
-            } else {
-                newValueObject[pos] = letterObject[pos]
-                arrayValue.push(letterObject[pos])
-            }
-        })
-        const newValueString = [prevValue, ...arrayValue, postValue].join('')
-        setValue({
-            ...value,
-            ...createObject(newValueString)
-        })
-
-   }
+   // const onHandlePaste = ({target: {selectionStart}, clipboardData}: React.ClipboardEvent) => {
+   //      const pasteRaw = (clipboardData || window.clipboardData).getData('text');
+   //      const paste = pasteRaw.length <= 10 ? pasteRaw : pasteRaw.slice(0, 10)
+   //      const valueString = Object.values(value).join('')
+   //      const prevValue = valueString.slice(0, selectionStart)
+   //      const postValue = valueString.slice(selectionStart + paste.length)
+   //      let pos = selectionStart;
+   //      let newValueObject = {...value};
+   //      let arrayValue = [];
+   //      [...paste].forEach((el, index) => {
+   //          pos += 1
+   //          newValueObject[pos] = el
+   //          const isMatch = checkOneValue(el, Object.values(newValueObject).join(''), pos)
+   //          if (isMatch) {
+   //              arrayValue.push(el)
+   //          } else {
+   //              newValueObject[pos] = letterObject[pos]
+   //              arrayValue.push(letterObject[pos])
+   //          }
+   //      })
+   //      const newValueString = [prevValue, ...arrayValue, postValue].join('')
+   //      setValue({
+   //          ...value,
+   //          ...createObject(newValueString)
+   //      })
+   //
+   // }
 
     const onHandleMouseEnter = (e: React.MouseEvent<HTMLInputElement>) => {
         // if(showMaskOnHover && showMaskOnFocus) {
@@ -356,12 +355,14 @@ const  ReactInputDateMask: React.FC<ReactInputDateMaskProps> = ({
 
     return (
         <input ref={myRef} placeholder={statePlaceholder} type='tel'
-               onClick={onClick} className={className} spellCheck="false" onInput={onInput} onTouchStart={onTouchStart}
+               // onClick={onClick}
+               className={className} spellCheck="false" onInput={onInput}
+               // onTouchStart={onTouchStart}
                onFocus={onFocus} value={calcValue(value)} onKeyDown={onKeyDown}
                autoComplete='off'
-               onPaste={onHandlePaste}
+               // onPaste={onHandlePaste}
                onMouseEnter={onHandleMouseEnter}
-               onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur} disabled={disabled} readOnly={readOnly}></input>
+               onMouseLeave={onHandleMouseLeave} onBlur={onHandleBlur} disabled={disabled} readOnly={readOnly}/>
     )
 }
 
